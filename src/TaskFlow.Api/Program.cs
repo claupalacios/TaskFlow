@@ -1,6 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using TaskFlow.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Also the design-time entry point for `dotnet ef` (Api is the startup project).
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("TaskFlow")));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
