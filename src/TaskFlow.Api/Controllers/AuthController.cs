@@ -8,7 +8,6 @@ namespace TaskFlow.Api.Controllers;
 [Route("api/auth")]
 [AllowAnonymous]
 [ApiExplorerSettings(GroupName = ApiDocuments.Identity)]
-[Produces("application/json")]
 public sealed class AuthController(IAuthService auth) : ControllerBase
 {
     [HttpPost("register")]

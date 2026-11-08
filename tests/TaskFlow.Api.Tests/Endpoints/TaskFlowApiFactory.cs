@@ -29,6 +29,7 @@ public class TaskFlowApiFactory : WebApplicationFactory<Program>
             ["Jwt:Audience"] = Audience,
             ["Jwt:SigningKey"] = SigningKey,
             ["Jwt:ExpirationMinutes"] = "60",
+            ["Database:MigrateOnStartup"] = "true",
             ["Database:SeedDemoData"] = SeedDemoData.ToString(),
         }));
     }

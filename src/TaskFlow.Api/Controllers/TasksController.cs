@@ -10,7 +10,6 @@ namespace TaskFlow.Api.Controllers;
 [Route("api/tasks")]
 [Authorize]
 [ApiExplorerSettings(GroupName = ApiDocuments.Tasks)]
-[Produces("application/json")]
 public sealed class TasksController(ITaskService tasks) : ControllerBase
 {
     [HttpGet]

@@ -9,7 +9,6 @@ namespace TaskFlow.Api.Controllers;
 [Route("api/users")]
 [Authorize]
 [ApiExplorerSettings(GroupName = ApiDocuments.Identity)]
-[Produces("application/json")]
 public sealed class UsersController(IAuthService auth) : ControllerBase
 {
     [HttpGet("me")]
