@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+using TaskFlow.Application.Common;
 using TaskFlow.Domain;
 using TaskFlow.Infrastructure.Persistence;
 
@@ -79,11 +79,14 @@ public sealed class UserRepositoryTests : IDisposable
     // ---- Integrity ----
 
     [Fact]
-    public async Task AddAsync_DuplicateEmail_ThrowsDbUpdateException()
+    public async Task AddAsync_DuplicateEmail_ThrowsConflictException()
     {
+        // AuthService checks for the email first, but two concurrent registrations can both
+        // pass that check. The unique index decides, and the repository must report it as a
+        // conflict (409), not leak an EF exception that would surface as a 500.
         await NewRepository().AddAsync(User.Create("ana@example.com", "hash", Now), Ct);
         var duplicate = User.Create("ANA@example.com", "other-hash", Now);
 
-        await Assert.ThrowsAsync<DbUpdateException>(() => NewRepository().AddAsync(duplicate, Ct));
+        await Assert.ThrowsAsync<ConflictException>(() => NewRepository().AddAsync(duplicate, Ct));
     }
 }
