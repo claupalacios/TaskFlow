@@ -178,6 +178,32 @@ public sealed class IdentityEndpointsTests(TaskFlowApiFactory factory) : IClassF
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    public static TheoryData<string, string?> TokensWithoutAValidSubject => new()
+    {
+        { "/api/users/me", null },
+        { "/api/users/me", "" },
+        { "/api/users/me", "not-a-guid" },
+        { "/api/tasks", null },
+        { "/api/tasks", "not-a-guid" },
+    };
+
+    [Theory]
+    [MemberData(nameof(TokensWithoutAValidSubject))]
+    public async Task AuthorizedEndpoint_SignedTokenWithoutAValidSubject_Returns401(string url, string? subject)
+    {
+        // Signed with the right key, but the API cannot tell whose request it is.
+        // It must be rejected as unauthenticated, never surface as a 500.
+        var claims = new Dictionary<string, object> { ["email"] = "ana@example.com" };
+        if (subject is not null)
+        {
+            claims["sub"] = subject;
+        }
+
+        var response = await factory.CreateClient().WithBearer(ApiClient.SignToken(claims)).GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     [Fact]
     public async Task Me_ValidTokenForUserThatDoesNotExist_Returns404()
     {

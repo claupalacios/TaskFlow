@@ -1,8 +1,11 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using TaskFlow.Application.Auth;
 using TaskFlow.Domain;
 using TaskFlow.Infrastructure.Security;
@@ -65,5 +68,25 @@ internal static class ApiClient
         var user = User.Create(UniqueEmail(), "unused-hash", clock.GetUtcNow());
 
         return new JwtTokenService(options, clock).CreateToken(user).Value;
+    }
+
+    /// <summary>
+    /// A correctly signed, unexpired token for this API carrying exactly the given claims
+    /// (so the subject can be left out or made invalid).
+    /// </summary>
+    public static string SignToken(IDictionary<string, object> claims)
+    {
+        var now = DateTime.UtcNow;
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = TaskFlowApiFactory.Issuer,
+            Audience = TaskFlowApiFactory.Audience,
+            Claims = claims,
+            IssuedAt = now,
+            NotBefore = now,
+            Expires = now.AddMinutes(10),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TaskFlowApiFactory.SigningKey)), SecurityAlgorithms.HmacSha256),
+        });
     }
 }
