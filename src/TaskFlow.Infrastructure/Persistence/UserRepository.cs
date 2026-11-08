@@ -1,4 +1,6 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using TaskFlow.Application.Common;
 using TaskFlow.Application.Users;
 using TaskFlow.Domain;
 
@@ -19,6 +21,19 @@ public sealed class UserRepository(AppDbContext dbContext) : IUserRepository
     public async Task AddAsync(User user, CancellationToken cancellationToken)
     {
         dbContext.Users.Add(user);
-        await dbContext.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteExtendedErrorCode: SqliteUniqueConstraint })
+        {
+            // Two registrations raced past AuthService's check; the unique index on Email decided.
+            dbContext.Entry(user).State = EntityState.Detached;
+            throw new ConflictException("An account with this email already exists.");
+        }
     }
+
+    // SQLITE_CONSTRAINT_UNIQUE. Email is the only unique column besides the primary key.
+    private const int SqliteUniqueConstraint = 2067;
 }
