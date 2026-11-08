@@ -1,0 +1,41 @@
+# Manual walkthrough of both APIs (Visual Studio, Rider or VS Code REST Client).
+# Run the API in Development first: demo accounts are seeded on startup.
+
+@baseUrl = http://localhost:5279
+
+### Identity API: log in as a demo user (anonymous)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "TaskFlow-demo1" }
+
+### Identity API: current user (authorized)
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Tasks API: list my tasks
+GET {{baseUrl}}/api/tasks
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Tasks API: create a task
+# @name created
+POST {{baseUrl}}/api/tasks
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{ "title": "Try the API", "description": "From the .http file", "dueDate": "2026-11-30" }
+
+### Tasks API: update it
+PUT {{baseUrl}}/api/tasks/{{created.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{ "title": "Try the API", "description": "Done", "status": "Completed", "dueDate": null }
+
+### Tasks API: delete it
+DELETE {{baseUrl}}/api/tasks/{{created.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Unauthorized: no token -> 401
+GET {{baseUrl}}/api/tasks
