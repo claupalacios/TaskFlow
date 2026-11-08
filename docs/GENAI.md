@@ -81,6 +81,23 @@ The API. Tests first for the endpoints, authentication and error handling, and n
 
 **Result:** merged.
 
+### M5a — Angular scaffold
+
+**Prompt summary**
+Plan the Angular frontend first, then scaffold the workspace.
+
+**AI contribution**
+- Proposed the frontend plan and scaffolded the workspace, app shell and API proxy.
+
+**My review and corrections**
+- I approved the proposed stack (Angular 21, Angular Material, Signals, Reactive Forms, Vitest), added ESLint and kept Playwright optional.
+- I asked the plan to handle per-field validation errors, avoid redirect loops on 401 and clear task state on logout. These are scheduled for M5b.
+- I required `--skip-git`, so `ng new` would not create a nested Git repository.
+- I pushed back on the five-hour estimate and asked for a minimum viable scope.
+- **Found by Claude:** `ng new` generated `.vscode/mcp.json` despite `--ai-config=none`. It was removed before the first commit.
+
+**Result:** merged.
+
 ## How AI output was validated
 
 - Every red phase was committed on its own and run to confirm the tests compiled and failed for missing behavior, before any implementation.
