@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -14,6 +16,9 @@ describe('app routes', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
+        // The tasks page loads its list; these specs only check where navigation ends.
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: AuthService,
           useValue: {
