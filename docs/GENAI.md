@@ -135,6 +135,28 @@ The task screens in Angular. Plan first and wait for approval, then two red/gree
 
 **Result:** merged.
 
+### M7 — Quality, CI and delivery
+
+**Prompt summary**
+The last milestone: a security audit before publishing, CI for .NET and Angular, a documentation review, a check against the assessment and the public repository. Plan first; review the results before every push and merge.
+
+**AI contribution**
+- Audited the tree and the git history for secrets, local databases and private files. Also audited the dependencies and the JWT configuration.
+- Wrote the GitHub Actions workflow and ran its steps locally, including the frontend in a fresh clone.
+- Added the user story to the README and the representative code samples to this file. Checked the app in a browser for console warnings.
+
+**My review and corrections**
+- I kept the original commits and their author email instead of rewriting the history.
+- I asked for a dependency audit without automatic updates.
+- I kept the OpenAPI documents available in every environment and asked to document it.
+- I allowed `dotnet format` in CI only if it needed no mass reformatting. It needed none, so it is a CI step.
+- I made the representative code samples a priority, since the PDF asks for them.
+- I required that the delivery link point to `main`.
+- **Found by Claude:** this file had no samples of generated code, although the PDF asks for them. The section below was added.
+- **Found by Claude:** `npm audit` reports 31 moderate issues, all in development tooling (`minimatch` and `glob`, through the Angular CLI and ESLint). Production dependencies and NuGet packages have none, so nothing was updated.
+
+**Result:** CI and documentation ready on the branch; merged after CI passes on GitHub and my review.
+
 ## Representative generated code
 
 Excerpts of code Claude generated, as they are in the repository after my review. Each one shows a decision or correction described above.
