@@ -22,9 +22,27 @@
   font: var(--mat-sys-headline-small);
 }
 
+// Always one row: wrapping broke the group's rounded border. On phones the toggles get
+// compact (see styles.scss for the label padding); if they still do not fit, the row scrolls.
 .tasks-filter {
-  flex-wrap: wrap;
+  max-width: 100%;
+  overflow-x: auto;
   margin-bottom: 16px;
+}
+
+.tasks-filter mat-button-toggle {
+  flex-shrink: 0;
+}
+
+@media (max-width: 599.98px) {
+  .tasks-filter {
+    width: 100%;
+    --mat-button-toggle-label-text-size: 13px;
+  }
+
+  .tasks-filter mat-button-toggle {
+    flex-grow: 1;
+  }
 }
 
 .tasks-state {

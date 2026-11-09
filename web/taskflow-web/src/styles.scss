@@ -37,3 +37,11 @@ body {
   height: 100%;
 }
 /* You can add global styles to this file, and also import other style files */
+
+// The task status filter on phones. Material has no token for the toggle label padding and the
+// label is inside the toggle's own view, so component styles cannot reach it.
+@media (max-width: 599.98px) {
+  .tasks-filter .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+    padding: 0 6px;
+  }
+}
