@@ -1,6 +1,13 @@
 <mat-toolbar class="app-toolbar">
   <mat-icon aria-hidden="true">task_alt</mat-icon>
   <span class="app-title">TaskFlow</span>
+  <span class="app-spacer"></span>
+  @if (auth.isAuthenticated()) {
+    <button mat-button type="button" class="app-logout" (click)="auth.logout()">
+      <mat-icon aria-hidden="true">logout</mat-icon>
+      Log out
+    </button>
+  }
 </mat-toolbar>
 
 <main class="app-content">

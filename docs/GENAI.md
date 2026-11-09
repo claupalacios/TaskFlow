@@ -98,10 +98,28 @@ Plan the Angular frontend first, then scaffold the workspace.
 
 **Result:** merged.
 
+### M5b — Frontend authentication
+
+**Prompt summary**
+Sign-in, registration and route protection in the Angular app, test-first, then a check against the running API before the merge.
+
+**AI contribution**
+- Wrote the specs and the implementation: session handling, token and 401 interceptors, guards, return URL checks, problem details parsing, the login and register pages and the routes.
+- Ran the auth flows in a browser against the local API.
+
+**My review and corrections**
+- The plan items I added in M5a are covered: server field errors appear under the matching field, and return URLs that point to the login or register page are rejected so sign-in cannot loop. Clearing task state on logout moves to M6, when the app has task state.
+- I approved three files beyond the plan: a helper for server field errors, a shared stylesheet for the auth pages, and a placeholder `/tasks` page until M6.
+- I required a check against the running API before the merge, not only unit tests.
+- **Found by Claude:** that check showed the Log out button with dark text on the blue toolbar. The toolbar now sets its colors through Material tokens, so its buttons use the light text color.
+
+**Result:** merged.
+
 ## How AI output was validated
 
 - Every red phase was committed on its own and run to confirm the tests compiled and failed for missing behavior, before any implementation.
 - `dotnet build` (warnings as errors) and `dotnet test` ran after each green phase and again before each merge.
 - I reviewed the diff of every phase before approving it, and each merge into `main` waited for that review.
 - Security behavior has endpoint tests: requests without a valid token return 401, another user's task returns 404, and a duplicate email returns 409.
+- Frontend flows were also run in a browser against the local API before the merge.
 - For the date converter and the `sub` check, the fix was turned off to confirm the test then fails, so the tests catch real errors and do not just pass.

@@ -6,12 +6,17 @@
 
 .app-toolbar {
   gap: 12px;
-  background: var(--mat-sys-primary);
-  color: var(--mat-sys-on-primary);
+  // Toolbar tokens (not plain colors) so buttons inside the toolbar pick up the text color too.
+  --mat-toolbar-container-background-color: var(--mat-sys-primary);
+  --mat-toolbar-container-text-color: var(--mat-sys-on-primary);
 }
 
 .app-title {
   font: var(--mat-sys-title-large);
+}
+
+.app-spacer {
+  flex: 1;
 }
 
 .app-content {
