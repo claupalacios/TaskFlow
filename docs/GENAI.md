@@ -135,6 +135,120 @@ The task screens in Angular. Plan first and wait for approval, then two red/gree
 
 **Result:** merged.
 
+## Representative generated code
+
+Excerpts of code Claude generated, as they are in the repository after my review. Each one shows a decision or correction described above.
+
+**Domain rule** ([`TaskItem.cs`](../src/TaskFlow.Domain/TaskItem.cs)). From M1: a failed update must leave the task unchanged, so every value is validated before anything is assigned.
+
+```csharp
+public void Update(string? title, string? description, TaskItemStatus status, DateOnly? dueDate, DateTimeOffset now)
+{
+    // Validate everything first so a failed update never leaves the task half-changed.
+    var newTitle = NormalizeTitle(title);
+    var newDescription = NormalizeDescription(description);
+
+    if (!Enum.IsDefined(status))
+    {
+        throw new DomainValidationException($"'{status}' is not a valid task status.");
+    }
+
+    Title = newTitle;
+    Description = newDescription;
+    Status = status;
+    DueDate = dueDate;
+    UpdatedAt = now;
+}
+```
+
+**Use case** ([`TaskService.cs`](../src/TaskFlow.Application/Tasks/TaskService.cs)). Every operation receives the caller's id, and the repository only returns that user's tasks, so another user's task is a 404.
+
+```csharp
+public async Task<TaskResponse> UpdateAsync(Guid userId, Guid taskId, UpdateTaskRequest request, CancellationToken cancellationToken)
+{
+    var task = await GetOwnedTaskAsync(userId, taskId, cancellationToken);
+
+    task.Update(request.Title, request.Description, request.Status, request.DueDate, timeProvider.GetUtcNow());
+
+    await repository.UpdateAsync(task, cancellationToken);
+
+    return ToResponse(task);
+}
+
+// The repository only returns the caller's own tasks, so "someone else's task" and
+// "no such task" are indistinguishable here by design.
+private async Task<TaskItem> GetOwnedTaskAsync(Guid userId, Guid taskId, CancellationToken cancellationToken)
+    => await repository.GetByIdAsync(userId, taskId, cancellationToken)
+       ?? throw new NotFoundException($"Task '{taskId}' was not found.");
+```
+
+**Endpoint** ([`TasksController.cs`](../src/TaskFlow.Api/Controllers/TasksController.cs)). The user id comes from the token, never from the request body.
+
+```csharp
+[HttpPost]
+[ProducesResponseType(StatusCodes.Status201Created)]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<ActionResult<TaskResponse>> Create(CreateTaskRequest request, CancellationToken cancellationToken)
+{
+    var task = await tasks.CreateAsync(User.GetUserId(), request, cancellationToken);
+
+    return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
+}
+```
+
+**Token validation** ([`JwtAuthenticationExtensions.cs`](../src/TaskFlow.Api/Auth/JwtAuthenticationExtensions.cs)). From M4: a correctly signed token without a valid `sub` used to return a 500. It is now rejected with a 401.
+
+```csharp
+OnTokenValidated = context =>
+{
+    if (context.Principal is null || !context.Principal.TryGetUserId(out _))
+    {
+        context.Fail("The token has no valid subject.");
+    }
+
+    return Task.CompletedTask;
+},
+```
+
+**Endpoint test** ([`TasksEndpointsTests.cs`](../tests/TaskFlow.Api.Tests/Endpoints/TasksEndpointsTests.cs)). It checks user isolation through real HTTP, using the API's real authentication and SQLite.
+
+```csharp
+[Fact]
+public async Task AnotherUsersTask_GetUpdateAndDeleteReturn404AndLeaveItUntouched()
+{
+    var owner = await ApiClient.CreateUserClientAsync(factory);
+    var intruder = await ApiClient.CreateUserClientAsync(factory);
+    var task = await CreateTaskAsync(owner);
+    var url = $"/api/tasks/{task.Id}";
+
+    await AssertProblemAsync(await intruder.GetAsync(url), HttpStatusCode.NotFound);
+    await AssertProblemAsync(
+        await intruder.PutAsJsonAsync(url, new { title = "Hijacked", status = "Completed" }, ApiClient.Json),
+        HttpStatusCode.NotFound);
+    await AssertProblemAsync(await intruder.DeleteAsync(url), HttpStatusCode.NotFound);
+
+    var stillThere = await owner.GetFromJsonAsync<TaskResponse>(url, ApiClient.Json);
+    Assert.Equal(task, stillThere);
+}
+```
+
+## Edge cases, authentication and validation
+
+- **Validation** lives in the domain and in the Application layer, not in the controllers. Errors are returned as Problem Details:
+  - The title is required and trimmed, with a maximum of 200 characters.
+  - The description has a maximum of 2000 characters.
+  - An unknown status returns 400.
+  - Due dates in the past are allowed (my decision in M1).
+- **Passwords** must have 8–128 characters, with at least one letter and one digit, and must not equal the email. They are hashed with ASP.NET Core Identity's `PasswordHasher`.
+- **Authentication** uses HS256 JWTs with issuer, audience, lifetime and algorithm checks. The signing key must have at least 32 bytes, or the API refuses to start, and it never lives in the repository.
+- **Login:** a wrong password and an unknown email both return 401. Both paths run the same password hash check, so the response time does not reveal which emails exist.
+- **Duplicate emails** return 409, including two registrations that arrive at the same time (M3).
+- **Authorization:**
+  - A request without a valid token returns 401.
+  - Another user's task returns 404 for read, update and delete.
+  - A `userId` sent in the request body is ignored.
+  - A non-GUID id returns 404.
+
 ## How AI output was validated
 
 - Every red phase was committed on its own and run to confirm the tests compiled and failed for missing behavior, before any implementation.
