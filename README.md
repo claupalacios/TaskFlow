@@ -2,11 +2,9 @@
 
 A small task manager: users register, log in, and manage their own private tasks (title, description, status, due date).
 
-> Work in progress: the API is complete; the Angular frontend and design notes come next.
-
 ## Stack
 - ASP.NET Core Web API on .NET 10, Clean Architecture, xUnit
-- Angular 21 (planned)
+- Angular 21 with Angular Material, Signals and Reactive Forms; Vitest for unit tests
 
 ## Structure
 ```
@@ -19,16 +17,26 @@ tests/
   TaskFlow.Application.Tests
   TaskFlow.Infrastructure.Tests
   TaskFlow.Api.Tests
+web/taskflow-web           Angular app (auth pages, task list and dialogs)
 ```
 
 ## Build and test
-Requires the .NET 10 SDK (pinned in `global.json`).
+Requires the .NET 10 SDK (pinned in `global.json`) and a Node.js version supported by Angular 21 (20.19+, 22.12+ or 24).
 ```bash
 dotnet build
 dotnet test
 ```
+```bash
+cd web/taskflow-web
+npm ci
+npm test -- --watch=false
+npm run lint
+```
 
-## Run the API locally
+## Run locally
+Start the API first, then the web app.
+
+### API
 1. Create a JWT signing key. It is kept in [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets), outside the repository. Run this once from the repository root.
 
    bash:
@@ -53,6 +61,15 @@ dotnet test
 | `bruno@example.com` | `TaskFlow-demo2` |
 
 Each account sees only its own tasks.
+
+### Web app
+In a second terminal:
+```bash
+cd web/taskflow-web
+npm ci
+npm start
+```
+Open http://localhost:4200 and sign in with a demo account, or create one. The dev server forwards `/api` to the API on port 5279 (`proxy.conf.json`), so the API must be running.
 
 ## Other environments
 Automatic migrations and seeding are enabled only in `appsettings.Development.json`. Anywhere else:
