@@ -1,0 +1,57 @@
+<section class="tasks">
+  <header class="tasks-header">
+    <h1 class="tasks-title">My tasks</h1>
+    <button mat-flat-button type="button" (click)="openForm(null)">
+      <mat-icon aria-hidden="true">add</mat-icon>
+      New task
+    </button>
+  </header>
+
+  <mat-button-toggle-group
+    class="tasks-filter"
+    aria-label="Filter by status"
+    hideSingleSelectionIndicator
+    [value]="store.filter() ?? 'all'"
+    (change)="setFilter($event.value)"
+  >
+    <mat-button-toggle value="all">All ({{ store.counts().all }})</mat-button-toggle>
+    @for (status of statuses; track status) {
+      <mat-button-toggle [value]="status">
+        {{ labels[status] }} ({{ store.counts()[status] }})
+      </mat-button-toggle>
+    }
+  </mat-button-toggle-group>
+
+  @if (store.loading()) {
+    <div class="tasks-state" role="status">
+      <mat-progress-bar mode="indeterminate" />
+      <p>Loading tasks…</p>
+    </div>
+  } @else if (store.error(); as error) {
+    <div class="tasks-state tasks-error" role="alert">
+      <p>{{ error }}</p>
+      <button mat-stroked-button type="button" (click)="store.load()">Retry</button>
+    </div>
+  } @else if (store.visibleTasks().length === 0) {
+    <p class="tasks-state tasks-empty">
+      {{
+        store.tasks().length === 0
+          ? 'No tasks yet. Create your first one with New task.'
+          : 'No tasks with this status.'
+      }}
+    </p>
+  } @else {
+    <ul class="tasks-list">
+      @for (task of store.visibleTasks(); track task.id) {
+        <li>
+          <app-task-item
+            [task]="task"
+            (edit)="openForm(task)"
+            (remove)="confirmDelete(task)"
+            (statusChange)="changeStatus(task, $event)"
+          />
+        </li>
+      }
+    </ul>
+  }
+</section>

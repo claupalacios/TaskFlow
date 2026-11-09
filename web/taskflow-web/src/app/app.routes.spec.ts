@@ -11,6 +11,16 @@ import { AuthService } from './core/auth/auth.service';
 describe('app routes', () => {
   let authenticated: boolean;
 
+  // The pages are lazy. Load their modules once up front, so the first navigation in a spec
+  // measures routing rather than the cold compile of a page and its Material imports.
+  beforeAll(() =>
+    Promise.all([
+      import('./features/auth/login/login-page'),
+      import('./features/auth/register/register-page'),
+      import('./features/tasks/tasks-page'),
+    ]),
+  );
+
   beforeEach(() => {
     authenticated = false;
     TestBed.configureTestingModule({

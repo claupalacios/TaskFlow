@@ -1,0 +1,62 @@
+<h2 mat-dialog-title>{{ editing ? 'Edit task' : 'New task' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="task-form">
+    @if (error(); as message) {
+      <p class="task-form-error" role="alert">{{ message }}</p>
+    }
+
+    <mat-form-field>
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" />
+      @if (form.controls.title.hasError('required') || form.controls.title.hasError('blank')) {
+        <mat-error>Title is required.</mat-error>
+      } @else if (form.controls.title.hasError('maxlength')) {
+        <mat-error>Use at most {{ titleMaxLength }} characters.</mat-error>
+      } @else if (form.controls.title.hasError('server')) {
+        <mat-error>{{ form.controls.title.getError('server') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="4"></textarea>
+      @if (form.controls.description.hasError('maxlength')) {
+        <mat-error>Use at most {{ descriptionMaxLength }} characters.</mat-error>
+      } @else if (form.controls.description.hasError('server')) {
+        <mat-error>{{ form.controls.description.getError('server') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Due date</mat-label>
+      <input matInput formControlName="dueDate" [matDatepicker]="picker" />
+      <mat-hint>Optional</mat-hint>
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+      @if (form.controls.dueDate.hasError('matDatepickerParse')) {
+        <mat-error>Enter a valid date.</mat-error>
+      } @else if (form.controls.dueDate.hasError('server')) {
+        <mat-error>{{ form.controls.dueDate.getError('server') }}</mat-error>
+      }
+    </mat-form-field>
+
+    @if (editing) {
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of statuses; track status) {
+            <mat-option [value]="status">{{ labels[status] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="saving()">
+      {{ editing ? 'Save' : 'Create' }}
+    </button>
+  </mat-dialog-actions>
+</form>

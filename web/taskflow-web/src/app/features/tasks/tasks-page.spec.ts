@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { firstValueFrom } from 'rxjs';
 
 import {
   buttonWithText,
@@ -284,12 +285,23 @@ describe('TasksPage', () => {
       return openDialogElements()[0];
     }
 
+    /**
+     * The delete request starts once the confirmation has finished closing, which is not
+     * synchronous with the click. Waiting for the close (not for stability, which the open
+     * request would hold back) lets the spec see the request.
+     */
+    async function answer(dialog: HTMLElement, label: 'Delete' | 'Cancel'): Promise<void> {
+      const closed = firstValueFrom(TestBed.inject(MatDialog).afterAllClosed);
+      buttonWithText(dialog, label).click();
+      await closed;
+    }
+
     it('deletes after confirmation', async () => {
       const el = await open();
 
       const dialog = await askToDelete(el, 'Pay rent');
       expect(dialog.textContent).toContain('Pay rent');
-      buttonWithText(dialog, 'Delete').click();
+      await answer(dialog, 'Delete');
       const req = http.expectOne('/api/tasks/t-3');
       expect(req.request.method).toBe('DELETE');
       req.flush(null, { status: 204, statusText: 'No Content' });
@@ -302,8 +314,7 @@ describe('TasksPage', () => {
     it('does nothing when the confirmation is cancelled', async () => {
       const el = await open();
 
-      const dialog = await askToDelete(el, 'Pay rent');
-      buttonWithText(dialog, 'Cancel').click();
+      await answer(await askToDelete(el, 'Pay rent'), 'Cancel');
       await settle();
 
       http.expectNone('/api/tasks/t-3');
@@ -313,7 +324,7 @@ describe('TasksPage', () => {
     it('removes a task that was already deleted elsewhere and says so', async () => {
       const el = await open();
 
-      buttonWithText(await askToDelete(el, 'Pay rent'), 'Delete').click();
+      await answer(await askToDelete(el, 'Pay rent'), 'Delete');
       http
         .expectOne('/api/tasks/t-3')
         .flush({ status: 404, title: 'Not found' }, { status: 404, statusText: 'Not Found' });
