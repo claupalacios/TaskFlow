@@ -152,6 +152,8 @@ The last milestone: a security audit before publishing, CI for .NET and Angular,
 - I allowed `dotnet format` in CI only if it needed no mass reformatting. It needed none, so it is a CI step.
 - I made the representative code samples a priority, since the PDF asks for them.
 - I required that the delivery link point to `main`.
+- I asked for a check of the app at phone width, since the PDF asks for a responsive frontend.
+- **Found by Claude:** in that check, the status filter wrapped onto a second row at 375 px and broke its rounded border. On phones it now stays on one row with compact toggles (they fit down to 360 px) and scrolls sideways below that.
 - **Found by Claude:** this file had no samples of generated code, although the PDF asks for them. The section below was added.
 - **Found by Claude:** `npm audit` reports 31 moderate issues, all in development tooling (`minimatch` and `glob`, through the Angular CLI and ESLint). Production dependencies and NuGet packages have none, so nothing was updated.
 
