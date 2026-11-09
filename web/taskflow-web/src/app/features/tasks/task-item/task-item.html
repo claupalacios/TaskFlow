@@ -1,0 +1,56 @@
+<article class="task" [class.task--overdue]="overdue()">
+  <div class="task-body">
+    <h3 class="task-title" [class.task-title--done]="task().status === 'Completed'">
+      {{ task().title }}
+    </h3>
+    @if (task().description) {
+      <p class="task-description">{{ task().description }}</p>
+    }
+    <div class="task-meta">
+      <span class="task-status" [attr.data-status]="task().status">
+        {{ labels[task().status] }}
+      </span>
+      @if (dueDate(); as due) {
+        <span class="task-due">Due {{ due | date: 'mediumDate' }}</span>
+      }
+      @if (overdue()) {
+        <span class="task-overdue">Overdue</span>
+      }
+    </div>
+  </div>
+
+  <div class="task-actions">
+    <button
+      mat-icon-button
+      type="button"
+      [matMenuTriggerFor]="statusMenu"
+      [attr.aria-label]="'Change status of ' + task().title"
+    >
+      <mat-icon aria-hidden="true">published_with_changes</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      [attr.aria-label]="'Edit ' + task().title"
+      (click)="edit.emit()"
+    >
+      <mat-icon aria-hidden="true">edit</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      [attr.aria-label]="'Delete ' + task().title"
+      (click)="remove.emit()"
+    >
+      <mat-icon aria-hidden="true">delete</mat-icon>
+    </button>
+  </div>
+
+  <mat-menu #statusMenu="matMenu">
+    @for (status of otherStatuses(); track status) {
+      <button mat-menu-item type="button" (click)="statusChange.emit(status)">
+        {{ labels[status] }}
+      </button>
+    }
+  </mat-menu>
+</article>

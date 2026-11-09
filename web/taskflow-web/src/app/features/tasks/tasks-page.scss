@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.tasks {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.tasks-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tasks-title {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+}
+
+.tasks-filter {
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tasks-state {
+  padding: 24px 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-large);
+  text-align: center;
+}
+
+.tasks-error {
+  color: var(--mat-sys-error);
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

@@ -1,0 +1,15 @@
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(480px, 80vw);
+}
+
+.task-form-error {
+  margin: 0 0 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font: var(--mat-sys-body-medium);
+}
