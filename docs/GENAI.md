@@ -115,6 +115,26 @@ Sign-in, registration and route protection in the Angular app, test-first, then 
 
 **Result:** merged.
 
+### M6 — Task screens
+
+**Prompt summary**
+The task screens in Angular. Plan first and wait for approval, then two red/green cycles (data layer, then UI), then a manual check against the running API before the merge.
+
+**AI contribution**
+- Proposed the plan, then wrote the specs and the implementation: the Tasks API client, the task store, date helpers, the task list with a status filter, one form dialog for create and edit, the delete confirmation and the quick status menu.
+- Ran the manual checks in a browser against the local API and database.
+
+**My review and corrections**
+- I pointed out that providers registered on a route are not destroyed when the user leaves it, so the proposed route-level store could keep one user's tasks after logout. The store is now provided by the tasks page, its dialogs use that same instance, and a test checks that a new instance is created on return.
+- I pointed out that `closeOnNavigation` reacts to history changes, not to router navigation such as logout. The page now closes the dialogs it opened when it is destroyed, with a test.
+- I approved the quick status change on condition that it sends the full task, so title, description and due date never change. Tests cover it, and the manual check confirmed it in the database.
+- I chose one form for create and edit, asked for the README update in this milestone, and set the priorities: working CRUD, session isolation, validation and errors, tests, API integration, visuals.
+- Before the merge, I required a manual check of CRUD, persistence after reload, switching from Ana to Bruno with no Ana data shown even while loading, and no operation after leaving the page with a dialog open.
+- **Found by Claude:** the first green build was over the 500 kB bundle budget (846 kB). Pages are now lazy-loaded, and the initial bundle is 399 kB.
+- **Found by Claude:** two specs assumed wrong timing: a delete starts only after the confirmation closes, and lazy pages compiling inside the first route test went over the 5-second test timeout. The specs now wait for the dialog to close and preload the pages; no assertion changed.
+
+**Result:** merged.
+
 ## How AI output was validated
 
 - Every red phase was committed on its own and run to confirm the tests compiled and failed for missing behavior, before any implementation.
@@ -122,4 +142,4 @@ Sign-in, registration and route protection in the Angular app, test-first, then 
 - I reviewed the diff of every phase before approving it, and each merge into `main` waited for that review.
 - Security behavior has endpoint tests: requests without a valid token return 401, another user's task returns 404, and a duplicate email returns 409.
 - Frontend flows were also run in a browser against the local API before the merge.
-- For the date converter and the `sub` check, the fix was turned off to confirm the test then fails, so the tests catch real errors and do not just pass.
+- For the date converter, the `sub` check, request cancellation in the task store and the task page's isolation (page-level store, closing dialogs), the fix was turned off to confirm the tests then fail, so the tests catch real errors and do not just pass.
