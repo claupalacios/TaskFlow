@@ -2,6 +2,15 @@
 
 A small task manager: users register, log in, and manage their own private tasks (title, description, status, due date).
 
+## User story
+> I often have several things to get done and need a simple way to keep track of them.
+>
+> I'd like to create tasks, set deadlines, update their progress, and remove them when they're no longer needed.
+>
+> Since other people might use the application too, I want my tasks to remain private.
+
+How AI was used to build it, with representative generated code and what was corrected, is in [docs/GENAI.md](docs/GENAI.md).
+
 ## Stack
 - ASP.NET Core Web API on .NET 10, Clean Architecture, xUnit
 - Angular 21 with Angular Material, Signals and Reactive Forms; Vitest for unit tests
@@ -32,6 +41,7 @@ npm ci
 npm test -- --watch=false
 npm run lint
 ```
+GitHub Actions runs the same checks on every push ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## Run locally
 Start the API first, then the web app.
@@ -72,7 +82,7 @@ npm start
 Open http://localhost:4200 and sign in with a demo account, or create one. The dev server forwards `/api` to the API on port 5279 (`proxy.conf.json`), so the API must be running.
 
 ## Other environments
-Automatic migrations and seeding are enabled only in `appsettings.Development.json`. Anywhere else:
+Automatic migrations and seeding are enabled only in `appsettings.Development.json`. Swagger UI is also Development-only, while the OpenAPI documents (`/openapi/tasks.json`, `/openapi/identity.json`) are served in every environment; they describe the endpoints and contain no secrets. Anywhere else:
 - Provide the key with the `Jwt__SigningKey` environment variable. It must be at least 32 bytes, or the API refuses to start.
 - Apply migrations as an explicit step before starting the API:
   ```bash
